@@ -56,10 +56,6 @@ TextVision AI is a powerful web application designed to analyze and extract key 
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
     ```
 2. Open your browser and navigate to `http://localhost:8000` to see the app in action.
-
-## 📜 License:
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ---
 
 **Created by**: Shafiul Opee
