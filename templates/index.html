@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Text Scanner App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* New Color Variables */
+        :root {
+            --color-primary: #00A896; /* Teal/Cyan */
+            --color-secondary: #041E42; /* Dark Navy/Blue */
+        }
+        
+        /* Apply primary color to buttons and focus states */
+        .btn-primary {
+            background-color: var(--color-secondary);
+        }
+        .btn-primary:hover {
+            background-color: #053B50; /* Slightly lighter navy on hover */
+        }
+        .focus-ring-primary:focus {
+            --tw-ring-color: var(--color-primary);
+            --tw-ring-opacity: 1;
+        }
+
+        /* Note: When using displacy.render(), these custom CSS classes are generally NOT used, 
+           as displacy generates its own inline styles and <mark> tags. */
+        .entity {
+            padding: 2px 5px;
+            margin: 0 2px;
+            border-radius: 4px;
+            display: inline-block;
+            cursor: help;
+            font-weight: bold;
+        }
+        /* Define a few colors for common entity types - changed to match new theme */
+        .ORG { background-color: #ff980040; border-bottom: 2px solid #FFC300; } /* Gold */
+        .PERSON { background-color: #00A89640; border-bottom: 2px solid var(--color-primary); } /* Teal */
+        .GPE { background-color: #2196F340; border-bottom: 2px solid #2196F3; } /* Blue */
+        .DATE, .CARDINAL, .MONEY { background-color: #F4433640; border-bottom: 2px solid #F44336; } /* Red */
+
+        /* Custom style to make text smaller in results area for less scrolling */
+        .results-text-sm {
+            font-size: 0.9rem;
+        }
+        /* Removed results-h3 styles as we'll use inline/tailwind for the new look */
+        .compact-table td, .compact-table th {
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 relative">
+    
+    <div class="absolute top-4 right-4 text-xs font-bold" style="color: var(--color-secondary);">
+        Made by Shafiul Opee
+    </div>
+    
+    <div class="max-w-4xl mx-auto bg-gray-100 shadow-xl rounded-lg p-6">
+        <h1 class="text-2xl font-bold text-center" style="color: var(--color-secondary); margin-bottom: 1.5rem;">
+            Deep Text Scanner App 🔎
+        </h1>
+
+        <form action="{{ url_for('analyze_text') }}" method="post" class="space-y-3 mb-4">
+            <textarea 
+                name="text_input" 
+                rows="4"
+                class="w-full p-3 border border-gray-300 rounded-md focus-ring-primary focus:border-gray-500" 
+                placeholder="Enter text here (e.g., 'Google was founded by Larry Page and Sergey Brin in 1998.')"
+            >{{ results.text if results else '' }}</textarea>
+            
+            <div class="text-center">
+                <button type="submit" class="inline-block px-8 text-white py-2 rounded-md transition duration-150 btn-primary">
+                    Analyze Text
+                </button>
+            </div>
+        </form>
+
+        {% if error %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative mb-3" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline">{{ error }}</span>
+            </div>
+        {% endif %}
+
+        {% if results %}
+            <hr class="my-4" style="border-color: #974d4d;">
+            
+            <h2 class="text-xl font-bold px-4 py-2 mt-2 mb-3 rounded-md" style="background-color: var(--color-primary); color: var(--color-secondary); border-left: 5px solid var(--color-secondary);">
+                Analysis Results
+            </h2>
+
+            <div class="bg-gray-200 p-4 rounded-md shadow-inner mb-4">
+                <h3 class="text-lg font-medium mb-2">Highlighted Entities</h3>
+                <p class="text-gray-700 leading-relaxed results-text-sm">
+                    {% if results and results.highlighted_html %}
+                        {{ results.highlighted_html | safe }}
+                    {% else %}
+                        {{ results.text }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <div class="text-center mb-3">
+                    <h3 class="inline-block text-lg font-bold text-white px-8 py-1 rounded-md" style="background-color: var(--color-secondary);">
+                        Entity Counts (Total: {{ results.entities | length }})
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 border border-gray-200 compact-table">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity Type</th>
+                                <th class="px-3 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for label, count in results.counts.items() %}
+                            <tr>
+                                <td class="px-3 py-1 whitespace-nowrap text-sm font-medium text-gray-900">{{ label }}</td>
+                                <td class="px-3 py-1 whitespace-nowrap text-sm text-gray-500">{{ count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="text-center mb-3">
+                    <h3 class="inline-block text-lg font-bold text-white px-8 py-1 rounded-md" style="background-color: var(--color-secondary);">
+                        Extracted Entities List
+                    </h3>
+                </div>
+                <ul class="list-disc list-inside bg-gray-200 p-3 rounded-md results-text-sm">
+                    {% for ent_text, ent_label in results.entities %}
+                        <li class="mb-0.5">
+                            <span class="font-semibold">{{ ent_text }}</span>: <span style="color: var(--color-primary);">{{ ent_label }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+        {% endif %}
+        
+    </div>
+
+</body>
+</html>
