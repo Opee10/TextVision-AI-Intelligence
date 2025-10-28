@@ -20,12 +20,8 @@ templates = Jinja2Templates(directory="templates")
 @app.get("/", name="home")
 async def home(request: Request):
     """Render the main NER input form."""
-    # The 'results' dictionary will be empty on initial load
     return templates.TemplateResponse("index.html", {"request": request, "results": None})
 
-# ----------------------------------------------------------------------
-# FIX 1: Enhanced error checking using the keys returned by core_nlp.py
-# ----------------------------------------------------------------------
 @app.post("/analyze", name="analyze_text")
 async def analyze_text(request: Request, text_input: str = Form(...)):
     """Handle text submission, run NER, and display results."""
@@ -46,12 +42,6 @@ async def analyze_text(request: Request, text_input: str = Form(...)):
                                           {"request": request, "results": None, 
                                            "error": results['error'], 
                                            "original_text": text_input})
-    
-    # SUCCESS: Pass the full results dictionary to the template for rendering.
-    # The template (index.html) must now be designed to display:
-    # 1. The original text (results['text'])
-    # 2. The entity list (results['entities'])
-    # 3. The HTML output (results['highlighted_html'])
     
     # Also pass the original text back so it remains in the text area
     results['original_text'] = text_input
