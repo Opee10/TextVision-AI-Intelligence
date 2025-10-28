@@ -1,7 +1,7 @@
 Install Guide
 
 # 2️⃣ Create virtual environment
-1. python -m venv venv ---- venv install hbe 
+1. python -m venv venv 
 2. Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 3. .venv\Scripts\activate
 4. pip install -r requirements.txt
