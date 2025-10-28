@@ -2,6 +2,13 @@
 
 TextVision AI is a powerful web application designed to analyze and extract key entities from text using advanced Natural Language Processing (NLP) techniques. This project identifies entities like people, organizations, locations, dates, monetary values, and more, and provides a user-friendly web interface to visualize the results.
 
+## 📸 Project Layout:
+### Image 1: 
+![Project Layout 1](./Project%20Layout%201.png)
+
+### Image 2: 
+![Project Layout 2](./Project%20Layout%202.png)
+
 ## 📋 Features:
 - **Named Entity Recognition (NER)**: Extracts and classifies entities such as names, organizations, locations, dates, monetary values, and other relevant data.
 - **Interactive User Interface**: Provides a simple and effective way for users to input text and get instant analysis of the highlighted entities.
